@@ -159,3 +159,63 @@ class SPR:
         return np.sum([y == y_pred]) / len(y)
     
     
+
+
+class PCA():
+    """
+    This class implement the Kernel PCA
+    """
+    
+    def __init__(self, kernel):
+        self.kernel = kernel
+        
+        
+
+    def fit(self,X):
+        """
+        Fitting phase
+        
+        Parameters
+        ------------
+        - X : numpy.ndarray
+            Data matrix
+        """
+        
+        self.X_train = X
+        K = self.kernel.compute_gram_matrix(self.X_train)
+        n = np.shape(K)[0]
+    
+        # 1) Center the Gram matrix
+        U = (1/n)*np.ones((n,n))
+        I = np.eye(n)
+        Kc =  (I-U).dot(K).dot(I-U)
+    
+        # 2) Compute the first eigenvectors (ui, ∆i)
+        _lambda, v = np.linalg.eig(Kc)
+    
+        # 3) Normalize the eigenvectors αi = ui/√∆i
+        alpha = v/_lambda
+        
+        self._lambda = np.real(_lambda)
+        self.alpha = np.real(alpha)
+    
+    
+    def proj(self, X, n):
+    
+        """
+        This function implement the projection on principal axis of  the Kernel PCA
+    
+        Parameters
+        ------------
+        - X : numpy.ndarray
+        Points to be projected
+        - n : int
+        Number of principal axis
+        - kernel : function
+        kernel of the PCA
+        """
+
+        K = self.kernel.compute_similarity_matrix(X)    
+        X_projected = K.dot(self.alpha[:,:n])
+
+        return X_projected
