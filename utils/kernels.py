@@ -36,9 +36,19 @@ class Kernel():
         self.X = X
         pass
     
-    def compute_similarity_matrix(self, Z):
+    def compute_similarity_matrix(self, Z, X=None):
         """
-        Compute the similarity matrix given data points
+        Compute the similarity matrix given data points using the kernel Gram matrix
+        
+        Parameters
+        -------------
+        - Z : numpy.ndarray
+            Test data matrix
+            
+        - X : numpy.ndarray (optional)
+            Training or subset of training data matrix
+            To be used to overwrite the kernel.X matrix
+            Default: None (i.e. unused)
         """
         pass
 
@@ -72,8 +82,17 @@ class GaussianKernel(Kernel):
     
     def compute_similarity_matrix(self, Z, X=None):
         """
-        Compute the similarity matrix of the Gaussian kernel
-        on some data input (X optional when self.X must be overwritten)
+        Compute the similarity matrix given data points using the kernel Gram matrix
+        
+        Parameters
+        -------------
+        - Z : numpy.ndarray
+            Test data matrix
+            
+        - X : numpy.ndarray (optional)
+            Training or subset of training data matrix
+            To be used to overwrite the kernel.X matrix
+            Default: None (i.e. unused)
         """
         if X is not None:
         	self.X = X
@@ -82,7 +101,47 @@ class GaussianKernel(Kernel):
         # Compute the squared euclidean norm for each data point (test)
         Z2 = np.sum(Z ** 2, 1)[:, np.newaxis]
         # Compute the squared euclidean norm of pairwise differences using the dot product
-        K0 = Z2 + X2.T - 2 * Z.dot(self.X.T)
+        S0 = Z2 + X2.T - 2 * Z.dot(self.X.T)
         # Compute the similarity matrix using numpy vectorized functions
-        K = np.power(np.exp(- self.gamma), K0)
+        S = np.power(np.exp(- self.gamma), S0)
+        return S
+    
+    
+class LinearKernel(Kernel):
+    def __init__(self):
+        super().__init__()
+        
+    def __call__(self, x, y):
+        """
+        Linear kernel similarity score on two data points
+        """
+        return x.dot(y)
+    
+    def compute_gram_matrix(self, X):
+        """
+        Compute the Gaussian kernel Gram matrix
+        """
+        self.X = X
+        # Compute the Gram matrix using numpy vectorized functions
+        K = self.X.dot(self.X.T)
         return K
+    
+    def compute_similarity_matrix(self, Z, X=None):
+        """
+        Compute the similarity matrix given data points using the kernel Gram matrix
+        
+        Parameters
+        -------------
+        - Z : numpy.ndarray
+            Test data matrix
+            
+        - X : numpy.ndarray (optional)
+            Training or subset of training data matrix
+            To be used to overwrite the kernel.X matrix
+            Default: None (i.e. unused)
+        """
+        if X is not None:
+        	self.X = X
+        # Compute the similarity matrix using numpy vectorized functions
+        S = Z.dot(self.X.T)
+        return S
