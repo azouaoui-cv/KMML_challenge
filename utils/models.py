@@ -121,37 +121,24 @@ class SPR:
             Labels
         """
         
-        self.X_train = X
         self.X0 = X[y == 0]
         self.X1 = X[y == 1]
-        
         self.m0 = len(self.X0)
         self.m1 = len(self.X1)
         
-        if self.kernel == False:
-            self.b = 1/2 * (1/(self.m0**2)*np.sum(self.X0.dot(self.X0.T)) 
-                            - 1/(self.m1**2)*np.sum(self.X1.dot(self.X1.T)))
-        else:
-            # à changer (comment ?)
-            self.list0 = list(np.where(y==0)[0])
-            self.list1 = list(np.where(y==1)[0])
-            self.b = 1/2 * (1/(self.m0**2)*np.sum([self.kernel(self.X_train[i],self.X_train[j]) 
-                                                   for i in self.list0 for j in self.list0])
-                            - (1/(self.m1**2))*np.sum([self.kernel(self.X_train[i],self.X_train[j]) 
-                                                       for i in self.list1 for j in self.list1]))
-
+        K0 = self.kernel.compute_gram_matrix(self.X0)
+        K1 = self.kernel.compute_gram_matrix(self.X1)
+        self.b = 1/2 * (1/(self.m0**2)*np.sum(K0)- 1/(self.m1**2)*np.sum(K1))
     
     def predict(self,X):
+                    
+        S1 = self.kernel.compute_similarity_matrix(X, self.X1)
+        S0 = self.kernel.compute_similarity_matrix(X, self.X0)
         
-        y_pred = np.zeros(len(X))
+        val = (1/self.m1*np.sum(S1, axis = 1) - 1/self.m0*np.sum(S0, axis = 1)) + self.b
         
-        for i in range(len(X)):
-            if self.kernel == False:
-                val = (1 / self.m1) * np.sum(self.X1.dot(X[i])) - (1 / self.m0) * np.sum(self.X0.dot(X[i])) + self.b
-            else:
-                val = ((1/self.m1)*np.sum([self.kernel(self.X_train[k],X[i]) for k in self.list1]) 
-                       - (1/self.m0)*np.sum([self.kernel(self.X_train[k],X[i]) for k in self.list0])) + self.b                    
-            y_pred[i] = np.sign(val)/2 + 1/2
+        y_pred = np.sign(val)/2 + 1/2
+            
         return y_pred    
     
     

@@ -70,11 +70,13 @@ class GaussianKernel(Kernel):
         K = np.power(np.exp(- self.gamma), K0)
         return K
     
-    def compute_similarity_matrix(self, Z):
+    def compute_similarity_matrix(self, Z, X=None):
         """
         Compute the similarity matrix of the Gaussian kernel
-        on some data input
+        on some data input (X optional when self.X must be overwritten)
         """
+        if X is not None:
+        	self.X = X
         # Compute the squared euclidean norm for each data point (train)
         X2 = np.sum(self.X ** 2, 1)[:, np.newaxis]
         # Compute the squared euclidean norm for each data point (test)
