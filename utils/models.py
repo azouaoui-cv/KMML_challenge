@@ -12,7 +12,6 @@ Implement some binary classifiers including:
 ###########
 import numpy as np
 from scipy import optimize
-from tqdm import tqdm
 
 
 class SVM:
@@ -24,64 +23,64 @@ class SVM:
         self._lambda = _lambda
         self.maxiter = maxiter
 
-        
+
     def fit(self,X,y):
         """
         Fitting phase
-        
+
         Parameters
         ------------
         - X : numpy.ndarray
             Data matrix
-            
+
         - y : numpy.array
             Labels
         """
-        
+
         self.X_train = X
-        
+
         # Define the kernel matrix K
         K = self.kernel.compute_gram_matrix(self.X_train)
 
         # transpose Y_train to fit the optimization formulation
         y = y * 2 - 1
-        
+
         # Use scipy.optimize to solve the problem
         self.n = len(y)
 
         # Define the loss function
-        f = lambda x: 1/2 * x.T.dot(K).dot(x) - y.T.dot(x) 
-        
+        f = lambda x: 1/2 * x.T.dot(K).dot(x) - y.T.dot(x)
+
         # Define the jacobian of the loss function
         grad_f = lambda x: K.dot(x) - y
 
         # Define the bounds (sequences of min, max) (This depends on the sign of Y_train)
-        bounds = [[0, y[i] / (2 * self.n * self._lambda)] 
-                  if y[i] > 0 
-                  else [y[i] / (2 * self.n * self._lambda), 0] 
+        bounds = [[0, y[i] / (2 * self.n * self._lambda)]
+                  if y[i] > 0
+                  else [y[i] / (2 * self.n * self._lambda), 0]
                   for i in range(self.n)]
 
         # define initial point
         x0 = np.zeros(self.n)
-        
+
         # define number max iteration
         opts = {"maxiter": self.maxiter}
-        
+
         # optimize
         res = optimize.minimize(f, x0, jac=grad_f, bounds=bounds, method="L-BFGS-B", options=opts)
-                
+
         # save results
         self.alpha = res["x"]
-        
+
     def predict(self, X):
         """
         Prediction phase
-        
+
         Parameters
         -----------
         - X : numpy.ndarray
             Testing data
-            
+
         Returns
         -----------
         - y_pred : numpy.array
@@ -90,108 +89,108 @@ class SVM:
         # Compute the similarity matrix for faster prediction
         S = self.kernel.compute_similarity_matrix(X)
         y_pred = S.dot(self.alpha)
-        
+
         # Rescale the prediction to 0 and 1
         y_pred = np.sign(y_pred) / 2 + 1/2
-            
-        return y_pred    
-    
-    
+
+        return y_pred
+
+
     def score(self, y, y_pred):
         return np.sum([y == y_pred]) / len(y)
-    
-    
+
+
 class SPR:
     """
     This class implements the Simple Pattern Recognition algorithm found in the Learning with Kernel books
     """
     def __init__(self, kernel=False):
         self.kernel = kernel
-        
+
     def fit(self,X,y):
         """
         Fitting phase
-        
+
         Parameters
         ------------
         - X : numpy.ndarray
             Data matrix
-            
+
         - y : numpy.array
             Labels
         """
-        
+
         self.X0 = X[y == 0]
         self.X1 = X[y == 1]
         self.m0 = len(self.X0)
         self.m1 = len(self.X1)
-        
+
         K0 = self.kernel.compute_gram_matrix(self.X0)
         K1 = self.kernel.compute_gram_matrix(self.X1)
         self.b = 1/2 * (1/(self.m0**2)*np.sum(K0)- 1/(self.m1**2)*np.sum(K1))
-    
+
     def predict(self,X):
-                    
+
         S1 = self.kernel.compute_similarity_matrix(X, self.X1)
         S0 = self.kernel.compute_similarity_matrix(X, self.X0)
-        
+
         val = (1/self.m1*np.sum(S1, axis = 1) - 1/self.m0*np.sum(S0, axis = 1)) + self.b
-        
+
         y_pred = np.sign(val)/2 + 1/2
-            
-        return y_pred    
-    
-    
+
+        return y_pred
+
+
     def score(self, y, y_pred):
         return np.sum([y == y_pred]) / len(y)
-    
-    
+
+
 
 
 class PCA():
     """
     This class implement the Kernel PCA
     """
-    
+
     def __init__(self, kernel):
         self.kernel = kernel
-        
-        
+
+
 
     def fit(self,X):
         """
         Fitting phase
-        
+
         Parameters
         ------------
         - X : numpy.ndarray
             Data matrix
         """
-        
+
         self.X_train = X
         K = self.kernel.compute_gram_matrix(self.X_train)
         n = np.shape(K)[0]
-    
+
         # 1) Center the Gram matrix
         U = (1/n)*np.ones((n,n))
         I = np.eye(n)
         Kc =  (I-U).dot(K).dot(I-U)
-    
+
         # 2) Compute the first eigenvectors (ui, ∆i)
         _lambda, v = np.linalg.eig(Kc)
-    
+
         # 3) Normalize the eigenvectors αi = ui/√∆i
         alpha = v/_lambda
-        
+
         self._lambda = np.real(_lambda)
         self.alpha = np.real(alpha)
-    
-    
+
+
     def proj(self, X, n):
-    
+
         """
         This function implement the projection on principal axis of  the Kernel PCA
-    
+
         Parameters
         ------------
         - X : numpy.ndarray
@@ -202,7 +201,7 @@ class PCA():
         kernel of the PCA
         """
 
-        K = self.kernel.compute_similarity_matrix(X)    
+        K = self.kernel.compute_similarity_matrix(X)
         X_projected = K.dot(self.alpha[:,:n])
 
         return X_projected
