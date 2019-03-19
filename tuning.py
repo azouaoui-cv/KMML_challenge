@@ -205,7 +205,7 @@ if __name__ == "__main__":
     
     for _, params in enumerate(settings):
         
-        sigma, window_size, gamma, _lambda = params
+        gamma, _lambda, sigma, window_size = params
         
         if kernel_name == "Gaussian":
             kernel = GaussianKernel(gamma)
