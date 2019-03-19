@@ -15,9 +15,11 @@ k = 10
 n_anchors = 6000
 # SVM + Gaussian kernel parameters
 γ = 500
-λ = 6e-6
+λ = 2e-4
 # choose random seed
 np.random.seed(1702)
+
+results = np.zeros(3000)
 
 for q in range(3):
     ####################### COMPUTE EMBEDDINGS ########################
@@ -33,7 +35,7 @@ for q in range(3):
     for j in range(p):
         for i in range(j+1):
             K_zz[i,j] = K1(Z[i],Z[j], σ)
-    K_zz =  K_zz + K_zz.T
+    Kκ_zz =  K_zz + K_zz.T
     np.fill_diagonal(K_zz, np.diagonal(K_zz)/2)
     # Then, compute K_ZZ inv**0.5
     β = 1e-3
@@ -58,18 +60,19 @@ for q in range(3):
     for x in X_train:
         embed_train.append(ψ_optim(x,anchors,k,σ))
     E_train = np.array(embed_train)
-
+    embed_test = []
+    for x in X_test:
+        embed_test.append(ψ_optim(x,anchors,k,σ))
+    E_test = np.array(embed_test)
     #################################################################
     # Do SVM on embeddings
 
     # Do SVM + Gaussian Kernel predictions
     kernel = GaussianKernel(γ)
-    results = np.zeros(3000)
-
-    X_train, Y_train, X_test = load_data(q, data_dir=DATA_DIR, files_dict=FILES)
     clf = SVM(_lambda=λ, kernel=kernel)
-    clf.fit(X_train, Y_train)
-    y_pred = clf.predict(X_test)
+    clf.fit(E_train, Y_train)
+    y_pred = clf.predict(E_test)
+    print(q)
     results[q*1000:q*1000 + 1000] = y_pred
 
 
