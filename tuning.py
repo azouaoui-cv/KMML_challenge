@@ -118,10 +118,10 @@ parser.add_argument("--use-sigma",
 
 # Window size
 parser.add_argument("--window-size-min",
-                   help=f"Window size lowest value.  Default: {DEFAULT_WINDOW_SIZE_MIN}", type=float,
+                   help=f"Window size lowest value.  Default: {DEFAULT_WINDOW_SIZE_MIN}", type=int,
                    default=DEFAULT_WINDOW_SIZE_MIN)
 parser.add_argument("--window-size-max",
-                   help=f"Window size highest value.  Default: {DEFAULT_WINDOW_SIZE_MAX}", type=float,
+                   help=f"Window size highest value.  Default: {DEFAULT_WINDOW_SIZE_MAX}", type=int,
                    default=DEFAULT_WINDOW_SIZE_MAX)
 parser.add_argument("--window-size-num",
                    help=f"Number of window size values to try.  Default: {DEFAULT_WINDOW_SIZE_NUM}", type=int,
@@ -164,6 +164,9 @@ if __name__ == "__main__":
     
     kernel_name = args.kernel
     model_name = args.clf
+    
+    print(f"args: {args}")
+    print(f"args use mat: {args.use_mat}")
         
     # Populate hyperparameters list  
     if args.use_lambda:
@@ -205,7 +208,10 @@ if __name__ == "__main__":
     
     for _, params in enumerate(settings):
         
+        print(params)
         gamma, _lambda, sigma, window_size = params
+        # convert window_size to int
+        window_size = int(window_size)
         
         if kernel_name == "Gaussian":
             kernel = GaussianKernel(gamma)
@@ -235,7 +241,7 @@ if __name__ == "__main__":
                 best_lambda[i] = _lambda
                 best_gamma[i] = gamma
                 best_sigma[i] = sigma
-                best_window_size[i] = best_window_size
+                best_window_size[i] = window_size
 
                 logging.info("\n")
 

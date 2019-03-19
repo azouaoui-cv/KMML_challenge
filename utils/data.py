@@ -148,6 +148,9 @@ def cross_validation(dataset_idx, clf, data_dir, files_dict,
 
     # Load data
     X_train, Y_train, X_test = load_data(dataset_idx, data_dir=data_dir, files_dict=files_dict, mat=mat)
+    # Temporary lower data size
+    #X_train = X_train[:100]
+    #Y_train = Y_train[:100]
 
     if embeddings_path is not None:
         X_train = np.load(embeddings_path)
@@ -165,22 +168,31 @@ def cross_validation(dataset_idx, clf, data_dir, files_dict,
 
     # Loop through the divided samples
     for bound in bounds:
+        # Assign bounds
         lower, upper = bound
+
         # Create index array for validation set
         idx = np.arange(lower, upper)
         not_idx = [i for i in range(n) if i not in idx]
 
         # Populate current train and val sets
-        _X_val = X_train[idx]
+        # Handle arrays
+        if mat:
+            _X_val = X_train[idx]
+            _X_train = X_train[not_idx]
+        # Handle lists
+        else:
+            _X_val = X_train[lower:upper]
+            _X_train = X_train[:lower] + X_train[upper:]
+            
         _Y_val = Y_train[idx]
-        _X_train = X_train[not_idx]
         _Y_train = Y_train[not_idx]
-
+            
         # Sanity checks
         assert len(_X_train) == len(_Y_train)
         assert len(_X_val) == len(_Y_val)
         assert len(_X_train) == n - len(X_train) // k
-
+        
         # Fit the classifier on the current training set
         clf.fit(_X_train, _Y_train)
         # Compute the score
