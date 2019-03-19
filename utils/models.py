@@ -153,7 +153,7 @@ class SPR:
 
 
 
-class PCA():
+class PCA:
     """
     This class implement the Kernel PCA
     """
