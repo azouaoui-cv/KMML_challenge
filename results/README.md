@@ -6,3 +6,4 @@
 3. "results3.csv": SPR linear kernel on whole set. Score: 0.57599
 4. "results4.csv": SVM Gaussian kernel same parameters for each dataset. Score: 0.68066 
 5. "results5.csv": SPR Gaussian kernel different parameters for each dataset. Score: 0.67600
+6. "results_conv_kernel.csv": Convolutional Kernel not approximate. Score: 0.70133

@@ -98,7 +98,7 @@ def load_data(file_id, data_dir, files_dict, mat=True):
 
 
 def cross_validation(dataset_idx, clf, data_dir, files_dict,
-                     k=5, embeddings=None, embeddings_path=None):
+                     k=5, embeddings=None, embeddings_path=None, mat=False):
     """
     Perform a k-fold cross-validation on a specific dataset
     given a specific classifier
@@ -129,7 +129,9 @@ def cross_validation(dataset_idx, clf, data_dir, files_dict,
 
     - embeddings : np.ndarray (optional)
         Computed embeddings available in memory
-
+        
+    - mat : boolean
+        Whether to take the original pre-processed embeddings
 
     Returns
     -----------
@@ -145,7 +147,7 @@ def cross_validation(dataset_idx, clf, data_dir, files_dict,
     scores_train = list()
 
     # Load data
-    X_train, Y_train, X_test = load_data(dataset_idx, data_dir=data_dir, files_dict=files_dict)
+    X_train, Y_train, X_test = load_data(dataset_idx, data_dir=data_dir, files_dict=files_dict, mat=mat)
 
     if embeddings_path is not None:
         X_train = np.load(embeddings_path)
