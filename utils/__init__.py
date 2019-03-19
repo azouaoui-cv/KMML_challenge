@@ -19,3 +19,4 @@ FILES = {0: {"train_mat": "Xtr0_mat100.csv",
 CWD = os.getcwd()
 DATA_DIR = os.path.join(CWD, "data")
 RESULT_DIR = os.path.join(CWD, "results")
+LOGGING_DIR = os.path.join(CWD, "logging")
