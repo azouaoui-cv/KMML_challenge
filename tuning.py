@@ -78,7 +78,7 @@ parser.add_argument("--lambda-max",
                    help=f"Regularizer highest value.  Default: {DEFAULT_LAMBDA_MAX}", type=float,
                    default=DEFAULT_LAMBDA_MAX)
 parser.add_argument("--lambda-num",
-                   help=f"Number of lambda values to try.  Default: {DEFAULT_LAMBDA_NUM}", type=float,
+                   help=f"Number of lambda values to try.  Default: {DEFAULT_LAMBDA_NUM}", type=int,
                    default=DEFAULT_LAMBDA_NUM)
 parser.add_argument("--lambda-logscale",
                    help=f"Use logscale for regularizer tuning.  Default: {DEFAULT_LAMBDA_LOGSCALE}", type=bool,
@@ -94,7 +94,7 @@ parser.add_argument("--gamma-max",
                    help=f"Scaling highest value.  Default: {DEFAULT_GAMMA_MAX}", type=float,
                    default=DEFAULT_GAMMA_MAX)
 parser.add_argument("--gamma-num",
-                   help=f"Number of Gamma values to try.  Default: {DEFAULT_GAMMA_NUM}", type=float,
+                   help=f"Number of Gamma values to try.  Default: {DEFAULT_GAMMA_NUM}", type=int,
                    default=DEFAULT_GAMMA_NUM)
 parser.add_argument("--gamma-logscale",
                    help=f"Use logscale for Gamma tuning.  Default: {DEFAULT_GAMMA_LOGSCALE}", type=bool,
@@ -110,7 +110,7 @@ parser.add_argument("--sigma-max",
                    help=f"Regularizer highest value.  Default: {DEFAULT_SIGMA_MAX}", type=float,
                    default=DEFAULT_SIGMA_MAX)
 parser.add_argument("--sigma-num",
-                   help=f"Number of sigma values to try.  Default: {DEFAULT_SIGMA_NUM}", type=float,
+                   help=f"Number of sigma values to try.  Default: {DEFAULT_SIGMA_NUM}", type=int,
                    default=DEFAULT_SIGMA_NUM)
 parser.add_argument("--use-sigma",
                    help=f"Whether to use the sigma in conv kernel. Default: {DEFAULT_USE_SIGMA}",
@@ -124,7 +124,7 @@ parser.add_argument("--window-size-max",
                    help=f"Window size highest value.  Default: {DEFAULT_WINDOW_SIZE_MAX}", type=float,
                    default=DEFAULT_WINDOW_SIZE_MAX)
 parser.add_argument("--window-size-num",
-                   help=f"Number of window size values to try.  Default: {DEFAULT_WINDOW_SIZE_NUM}", type=float,
+                   help=f"Number of window size values to try.  Default: {DEFAULT_WINDOW_SIZE_NUM}", type=int,
                    default=DEFAULT_WINDOW_SIZE_NUM)
 parser.add_argument("--use-window-size",
                    help=f"Whether to use the window size hyperparameter. Default: {DEFAULT_USE_WINDOW_SIZE}",
