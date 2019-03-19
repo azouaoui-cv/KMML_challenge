@@ -14,6 +14,7 @@ Data utility functions, including:
 import csv
 import numpy as np
 import os
+from utils import FILES, DATA_DIR, RESULT_DIR
 
 
 #############
@@ -101,38 +102,37 @@ def cross_validation(dataset_idx, clf, data_dir, files_dict,
     """
     Perform a k-fold cross-validation on a specific dataset
     given a specific classifier
-    
+
     Parameters
     -------------
     - dataset_idx : int
         Dataset index to be called in the data loader
-        
+
     - clf : object
         Classifier object with methods:
         . fit
         . predict
         . score
-        
+
     - files_dict : dict
         Mapping from id to file names
-    
+
     - data_dir : string
         Data folder path
-        
+
     - k : int (optional)
         Number of folds
         Default: 5
-        
+
     - embeddings_path : str (optional)
         pre-computed embeddings filename
-    
+
     - embeddings : np.ndarray (optional)
         Computed embeddings available in memory
         
     - mat : boolean
         Whether to take the original pre-processed embeddings
-        
-    
+
     Returns
     -----------
     - results : dictionary
@@ -141,23 +141,23 @@ def cross_validation(dataset_idx, clf, data_dir, files_dict,
         a pandas.DataFrame such as in:
         ``pd.DataFrame(results)``
     """
-    
+
     # Setup
     scores_val = list()
     scores_train = list()
-    
+
     # Load data
     X_train, Y_train, X_test = load_data(dataset_idx, data_dir=data_dir, files_dict=files_dict, mat=mat)
-    
+
     if embeddings_path is not None:
         X_train = np.load(embeddings_path)
-        
+
     if embeddings is not None:
         X_train = embeddings
-    
+
     n = len(X_train)
     assert n == len(Y_train)
-    
+
     # Divise the samples
     bounds = [(i * (n // k), (i+1) * (n // k))
               for i in range(k)]
@@ -193,7 +193,7 @@ def cross_validation(dataset_idx, clf, data_dir, files_dict,
         scores_train.append(score_train)
 
 
-   
+
     # Format the results in a dictionary
     # Compute the score average and standard deviation
     results = {"train_scores": scores_train,
@@ -202,7 +202,7 @@ def cross_validation(dataset_idx, clf, data_dir, files_dict,
                "val_avg": np.mean(scores_val),
                "train_std": np.std(scores_train),
                "val_std": np.std(scores_val)}
-    
+
     return results
 
 
@@ -237,6 +237,72 @@ def save_results(filename, results, result_dir):
         for i in range(len(results)):
                 writer.writerow([i, results[i]])
 
+def P(i, seq, k, zero_padding=True):
+    """
+    Compute the a k_mers at a given position in a nucleotides sequence
+
+    Parameters
+    -----------
+    - i : int
+        Position in the sequence
+
+    - k : int
+        Size of k-mer to be returned
+
+    - seq : str
+        Sequence of nucleotides
+
+    - zero_padding : boolean (optional)
+        Whether to use zero-padding on the sequence edges
+        Default: True
+
+    Returns
+    -----------
+    - L : numpy.array
+        One-hot encoding of the string sequence
+
+    - not_in : boolean
+        Whether the k-mer was computed on the sequence edges
+        Always set to False when using zero-padding
+    """
+
+    ENCODING = {'A': [1.,0.,0.,0.],
+            'C': [0.,1.,0.,0.],
+            'G': [0.,0.,1.,0.],
+            'T': [0.,0.,0.,1.],
+            'Z': [0.,0.,0.,0.]} # used in zero-padding
+
+
+    # Setup
+    not_in = True
+    if zero_padding:
+        not_in = False
+
+    # lower edge
+    if i-(k+1)//2 + 1 < 0:
+        # Use heading zero padding here
+        n_zeros = abs(i - (k+1) // 2 + 1)
+        k_mer_i = 'Z'*n_zeros + seq[:  i + (k+2)//2]
+    # upper edge
+    elif i + (k+2)//2 > len(seq):
+        # Use trailing zero padding here
+        n_zeros = i + (k+2) // 2 - len(seq)
+        k_mer_i = seq[i - (k+1)//2 + 1:] + 'Z'*n_zeros
+    # in the middle
+    else:
+        k_mer_i = seq[i-(k+1)//2 + 1 :  i + (k+2)//2]
+        not_in = False
+
+    # concatenate one hot encoding
+    L = []
+    for c in k_mer_i:
+        L += ENCODING[c]
+
+    # Sanity check
+    assert len(L) == 4 * k
+
+    # Convert to array and return
+    return np.array(L), not_in
 
 def compute_kmers_list(idx, k):
 
@@ -254,7 +320,7 @@ def compute_kmers_list(idx, k):
     X_train, Y_train, X_test = load_data(idx, data_dir=DATA_DIR, files_dict=FILES, mat = False)
     n = len(X_train)
     m = len(X_train[0])
-    
+
     kmers = []
     for x in X_train:
         for i in range(m):
@@ -265,3 +331,13 @@ def compute_kmers_list(idx, k):
     kmers = np.array(kmers)
 
     return kmers
+
+def κ(u, σ):
+    return np.exp((u-1)/σ**2)
+
+def K1(z1, z2, σ):
+    z1_norm = np.linalg.norm(z1)
+    z2_norm = np.linalg.norm(z2)
+    z1z2_norm = z1_norm*z2_norm
+    u = z1.dot(z2)/z1z2_norm
+    return z1z2_norm*κ(u,σ)

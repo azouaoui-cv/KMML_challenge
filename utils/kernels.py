@@ -250,10 +250,7 @@ class ConvKernel(Kernel):
 
         n = len(X)
         K = np.zeros((n,n))
-        print('ok')
         for i in range(n):
-            if(i%(n//10)==0):
-                print((10*i)//n, end= '% ')
             for j in range(i+1):
                 x = X[i]
                 y = X[j]
@@ -304,8 +301,6 @@ class ConvKernel(Kernel):
         m = len(Z)
         K = np.zeros((m,n))
         for i in range(m):
-            if(i%(m//10)==0):
-                print((10*i)//m, end= '% ')
             for j in range(n):
                 z = Z[i]
                 x = self.X[j]
