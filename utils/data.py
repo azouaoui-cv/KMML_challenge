@@ -22,42 +22,42 @@ import os
 def load_data(file_id, data_dir, files_dict, mat=True):
     """
     Load datasets
-    
+
     Parameters
     ------------
     - file_id : int
         identifier to load the file
         (0, 1 or 2)
-    
+
     - files_dict : dict
         Mapping from id to file names
-    
+
     - data_dir : string
         Data folder path
-    
+
     - mat : boolean (optional)
         If True, load the data in their matrix form
         If False, load the raw data sequences
         Default: True
-        
+
     Returns
     ---------------
     - X_train : numpy.array
         Training data (either in matrix or string form)
-    
+
     - Y_train : numpy.array
         Training label
-        
+
     - X_test : numpy.array
         Testing data (either in matrix or string form)
     """
-    
+
     X_train = list()
     Y_train = list()
     X_test = list()
-    
+
     dic = files_dict[file_id]
-    
+
     if mat:
         files = [dic["train_mat"], dic["label"], dic["test_mat"]]
     else:
@@ -74,7 +74,7 @@ def load_data(file_id, data_dir, files_dict, mat=True):
                 next(reader, None) # Skip the header
                 for row in reader:
                     l.append(row[1])
-                
+
     if mat:
         X_train = np.array(X_train).astype("float")
         Y_train = np.array(Y_train).astype("int")
@@ -83,45 +83,74 @@ def load_data(file_id, data_dir, files_dict, mat=True):
         index = np.random.permutation(len(X_train))
         X_train = X_train[index]
         Y_train = Y_train[index]
-    
+
     else:
         np.random.seed(0)
         index = np.random.permutation(len(X_train))
         X_train = [X_train[i] for i in index]
         Y_train = [Y_train[i] for i in index]
         Y_train = np.array(Y_train).astype("int")
-        
-    
+
+
     return X_train, Y_train, X_test
 
 
 
 def save_results(filename, results, result_dir):
     """
-    Save results in a csv file 
-    
+    Save results in a csv file
+
     Parameters
     -----------
     - filename : string
         Name of the file to be saved under the ``results`` folder
-        
+
     - results : numpy.array
         Resulting array (0 and 1's)
-        
+
     - result_dir : string
         Result folder path
     """
-    
+
     assert filename.endswith(".csv"), "this is not a csv extension!"
     # Convert results to int
     results = results.astype("int")
-    
+
     with open(os.path.join(result_dir, filename), 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
 
         # Write header
-        writer.writerow(["Id", "Bound"]) 
+        writer.writerow(["Id", "Bound"])
         assert len(results) == 3000, "There is not 3000 predictions"
         # Write results
         for i in range(len(results)):
                 writer.writerow([i, results[i]])
+
+
+def compute_kmers_list(idx, k):
+
+
+    """This function compute all the k-mers of a list of sequences
+
+    Parameters
+    ------------
+    - idx : int
+        index of the dataset (0,1, or 2)
+    - k : int
+        length of the k-mers
+    """
+
+    X_train, Y_train, X_test = load_data(idx, data_dir=DATA_DIR, files_dict=FILES, mat = False)
+    n = len(X_train)
+    m = len(X_train[0])
+    
+    kmers = []
+    for x in X_train:
+        for i in range(m):
+            p = P(i,x,k)
+            if p[1] == False:
+                kmers.append(p[0])
+
+    kmers = np.array(kmers)
+
+    return kmers
