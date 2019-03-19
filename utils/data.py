@@ -15,6 +15,7 @@ import csv
 import numpy as np
 import os
 
+
 #############
 # Utilities #
 #############
@@ -93,6 +94,113 @@ def load_data(file_id, data_dir, files_dict, mat=True):
 
 
     return X_train, Y_train, X_test
+
+
+def cross_validation(dataset_idx, clf, data_dir, files_dict,
+                     k=5, embeddings=None, embeddings_path=None):
+    """
+    Perform a k-fold cross-validation on a specific dataset
+    given a specific classifier
+    
+    Parameters
+    -------------
+    - dataset_idx : int
+        Dataset index to be called in the data loader
+        
+    - clf : object
+        Classifier object with methods:
+        . fit
+        . predict
+        . score
+        
+    - files_dict : dict
+        Mapping from id to file names
+    
+    - data_dir : string
+        Data folder path
+        
+    - k : int (optional)
+        Number of folds
+        Default: 5
+        
+    - embeddings_path : str (optional)
+        pre-computed embeddings filename
+    
+    - embeddings : np.ndarray (optional)
+        Computed embeddings available in memory
+        
+    
+    Returns
+    -----------
+    - results : dictionary
+        Summary of the results
+        Note: the results can be display using
+        a pandas.DataFrame such as in:
+        ``pd.DataFrame(results)``
+    """
+    
+    # Setup
+    scores_val = list()
+    scores_train = list()
+    
+    # Load data
+    X_train, Y_train, X_test = load_data(dataset_idx, data_dir=data_dir, files_dict=files_dict)
+    
+    if embeddings_path is not None:
+        X_train = np.load(embeddings_path)
+        
+    if embeddings is not None:
+        X_train = embeddings
+    
+    n = len(X_train)
+    assert n == len(Y_train)
+    
+    # Divise the samples
+    bounds = [(i * (n // k), (i+1) * (n // k))
+              for i in range(k)]
+
+
+    # Loop through the divided samples
+    for bound in bounds:
+        lower, upper = bound
+        # Create index array for validation set
+        idx = np.arange(lower, upper)
+        not_idx = [i for i in range(n) if i not in idx]
+
+        # Populate current train and val sets
+        _X_val = X_train[idx]
+        _Y_val = Y_train[idx]
+        _X_train = X_train[not_idx]
+        _Y_train = Y_train[not_idx]
+
+        # Sanity checks
+        assert len(_X_train) == len(_Y_train)
+        assert len(_X_val) == len(_Y_val)
+        assert len(_X_train) == n - len(X_train) // k
+
+        # Fit the classifier on the current training set
+        clf.fit(_X_train, _Y_train)
+        # Compute the score
+        y_pred_train = clf.predict(_X_train)
+        y_pred_val = clf.predict(_X_val)
+        score_train = clf.score(y_pred_train, _Y_train)
+        score_val = clf.score(y_pred_val, _Y_val)
+
+        scores_val.append(score_val)
+        scores_train.append(score_train)
+
+
+   
+    # Format the results in a dictionary
+    # Compute the score average and standard deviation
+    results = {"train_scores": scores_train,
+               "val_scores": scores_val,
+               "train_avg": np.mean(scores_train),
+               "val_avg": np.mean(scores_val),
+               "train_std": np.std(scores_train),
+               "val_std": np.std(scores_val)}
+    
+    return results
 
 
 
