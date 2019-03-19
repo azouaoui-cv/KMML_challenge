@@ -48,7 +48,7 @@ DEFAULT_WINDOW_SIZE_MAX = 11
 DEFAULT_WINDOW_SIZE_NUM = 3
 DEFAULT_USE_WINDOW_SIZE = False
 # Numerical representation
-DEFAULT_USE_MAT = True
+DEFAULT_USE_MAT = False
 # Number of cross-validation folds
 DEFAULT_K_FOLD = 5
 # Logging filename
