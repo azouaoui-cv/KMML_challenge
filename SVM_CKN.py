@@ -74,4 +74,4 @@ for q in range(3):
 
 
 # SAVE Results
-save_results("results_test.csv", results, RESULT_DIR)
+save_results("results_CKN.csv", results, RESULT_DIR)

@@ -29,4 +29,4 @@ for i in range(len_files):
 
 
 # SAVE Results
-save_results("results_test.csv", results, RESULT_DIR)
+save_results("results_conv_kernel.csv", results, RESULT_DIR)
