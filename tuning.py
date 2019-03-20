@@ -48,7 +48,7 @@ DEFAULT_WINDOW_SIZE_MAX = 11
 DEFAULT_WINDOW_SIZE_NUM = 3
 DEFAULT_USE_WINDOW_SIZE = False
 # Numerical representation
-DEFAULT_USE_MAT = True
+DEFAULT_USE_MAT = False
 # Number of cross-validation folds
 DEFAULT_K_FOLD = 5
 # Logging filename
@@ -78,7 +78,7 @@ parser.add_argument("--lambda-max",
                    help=f"Regularizer highest value.  Default: {DEFAULT_LAMBDA_MAX}", type=float,
                    default=DEFAULT_LAMBDA_MAX)
 parser.add_argument("--lambda-num",
-                   help=f"Number of lambda values to try.  Default: {DEFAULT_LAMBDA_NUM}", type=float,
+                   help=f"Number of lambda values to try.  Default: {DEFAULT_LAMBDA_NUM}", type=int,
                    default=DEFAULT_LAMBDA_NUM)
 parser.add_argument("--lambda-logscale",
                    help=f"Use logscale for regularizer tuning.  Default: {DEFAULT_LAMBDA_LOGSCALE}", type=bool,
@@ -94,7 +94,7 @@ parser.add_argument("--gamma-max",
                    help=f"Scaling highest value.  Default: {DEFAULT_GAMMA_MAX}", type=float,
                    default=DEFAULT_GAMMA_MAX)
 parser.add_argument("--gamma-num",
-                   help=f"Number of Gamma values to try.  Default: {DEFAULT_GAMMA_NUM}", type=float,
+                   help=f"Number of Gamma values to try.  Default: {DEFAULT_GAMMA_NUM}", type=int,
                    default=DEFAULT_GAMMA_NUM)
 parser.add_argument("--gamma-logscale",
                    help=f"Use logscale for Gamma tuning.  Default: {DEFAULT_GAMMA_LOGSCALE}", type=bool,
@@ -110,7 +110,7 @@ parser.add_argument("--sigma-max",
                    help=f"Regularizer highest value.  Default: {DEFAULT_SIGMA_MAX}", type=float,
                    default=DEFAULT_SIGMA_MAX)
 parser.add_argument("--sigma-num",
-                   help=f"Number of sigma values to try.  Default: {DEFAULT_SIGMA_NUM}", type=float,
+                   help=f"Number of sigma values to try.  Default: {DEFAULT_SIGMA_NUM}", type=int,
                    default=DEFAULT_SIGMA_NUM)
 parser.add_argument("--use-sigma",
                    help=f"Whether to use the sigma in conv kernel. Default: {DEFAULT_USE_SIGMA}",
@@ -118,13 +118,13 @@ parser.add_argument("--use-sigma",
 
 # Window size
 parser.add_argument("--window-size-min",
-                   help=f"Window size lowest value.  Default: {DEFAULT_WINDOW_SIZE_MIN}", type=float,
+                   help=f"Window size lowest value.  Default: {DEFAULT_WINDOW_SIZE_MIN}", type=int,
                    default=DEFAULT_WINDOW_SIZE_MIN)
 parser.add_argument("--window-size-max",
-                   help=f"Window size highest value.  Default: {DEFAULT_WINDOW_SIZE_MAX}", type=float,
+                   help=f"Window size highest value.  Default: {DEFAULT_WINDOW_SIZE_MAX}", type=int,
                    default=DEFAULT_WINDOW_SIZE_MAX)
 parser.add_argument("--window-size-num",
-                   help=f"Number of window size values to try.  Default: {DEFAULT_WINDOW_SIZE_NUM}", type=float,
+                   help=f"Number of window size values to try.  Default: {DEFAULT_WINDOW_SIZE_NUM}", type=int,
                    default=DEFAULT_WINDOW_SIZE_NUM)
 parser.add_argument("--use-window-size",
                    help=f"Whether to use the window size hyperparameter. Default: {DEFAULT_USE_WINDOW_SIZE}",
@@ -164,6 +164,9 @@ if __name__ == "__main__":
     
     kernel_name = args.kernel
     model_name = args.clf
+    
+    print(f"args: {args}")
+    print(f"args use mat: {args.use_mat}")
         
     # Populate hyperparameters list  
     if args.use_lambda:
@@ -205,7 +208,10 @@ if __name__ == "__main__":
     
     for _, params in enumerate(settings):
         
-        sigma, window_size, gamma, _lambda = params
+        print(params)
+        gamma, _lambda, sigma, window_size = params
+        # convert window_size to int
+        window_size = int(window_size)
         
         if kernel_name == "Gaussian":
             kernel = GaussianKernel(gamma)
@@ -235,7 +241,7 @@ if __name__ == "__main__":
                 best_lambda[i] = _lambda
                 best_gamma[i] = gamma
                 best_sigma[i] = sigma
-                best_window_size[i] = best_window_size
+                best_window_size[i] = window_size
 
                 logging.info("\n")
 
