@@ -37,7 +37,7 @@ for k in k_list:
             # Then, compute K_ZZ inv**0.5
             β = 1e-3
             print("start matrix inversion")
-            K_ZZ_inv_sqr = sp.linalg.sqrtm(sp.linalg.inv(K_zz + β*np.eye(np.shape(K_zz)[0])))
+            K_ZZ_inv_sqr = sp.linalg.inv(sp.linalg.sqrtm(K_zz + β*np.eye(np.shape(K_zz)[0])))
 
             # define approximate mapping thanks to the anchors
             def ψ_optim(x, Z_anchor, k , σ):
