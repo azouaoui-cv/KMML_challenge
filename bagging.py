@@ -7,7 +7,7 @@ from utils import FILES, DATA_DIR, RESULT_DIR
 
 
 # define the list of predictions to do bagging
-file_list = ['results0.csv','results1.csv','results2.csv','results3.csv']
+file_list = ['results_CKN.csv','results_conv_kernel.csv','results5.csv']
 
 
 # load all the predictions vectors in a matrix
