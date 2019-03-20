@@ -9,17 +9,18 @@ import scipy as sp
 
 
 # DEFINE embeddings parameters lists
-k_list = [10]
-sigma_list = [0.4]
+k_list = [9, 10, 11]
+sigma_list = [0.35, 0.4, 0.45]
 
 
-n_anchors = 10
+n_anchors = 100
 np.random.seed(1702)
 
 for k in k_list:
     for σ in sigma_list:
         for q in range(3):
 
+            print(f"params: {k, σ}. dataset: {q}", flush=True)
             # choose random anchors
             kmers = compute_kmers_list(q, k)
             index = np.random.choice(range(len(kmers)), replace=False, size = n_anchors)
@@ -36,8 +37,10 @@ for k in k_list:
             np.fill_diagonal(K_zz, np.diagonal(K_zz)/2)
             # Then, compute K_ZZ inv**0.5
             β = 1e-3
-            print("start matrix inversion")
+            print("start matrix inversion", flush=True)
             K_ZZ_inv_sqr = sp.linalg.inv(sp.linalg.sqrtm(K_zz + β*np.eye(np.shape(K_zz)[0])))
+            
+            assert np.all(K_ZZ_inv_sqr.imag == np.zeros((p, p))), "imaginary coefficients"
 
             # define approximate mapping thanks to the anchors
             def ψ_optim(x, Z_anchor, k , σ):
@@ -51,7 +54,7 @@ for k in k_list:
                 return np.sum(b, axis=1)/np.shape(b)[1]
 
             # compute embeddings
-            print("start compute embeddings")
+            print("start compute embeddings", flush=True)
             X_train, Y_train, X_test = load_data(q, data_dir=DATA_DIR, files_dict=FILES, mat = False)
             embed_train = []
             for x in X_train:
