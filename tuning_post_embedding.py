@@ -191,14 +191,14 @@ if __name__ == "__main__":
                 best_sigma[dataset_idx] = sigma
                 best_window_size[dataset_idx] = window_size
 
-                logger.info("\n")
+                logger.info("New best on {0}".format(dataset_idx))
 
-        # Save best configuration
-        logger.info(f"Best score: {best_score}")
-        logger.info(f"Best gamma: {best_gamma}")
-        logger.info(f"Best lambda: {best_lambda}")
-        logger.info(f"Best sigma: {best_sigma}")
-        logger.info(f"Best window size: {best_window_size}")
+    # Save best configuration
+    logger.info(f"Best score: {best_score}")
+    logger.info(f"Best gamma: {best_gamma}")
+    logger.info(f"Best lambda: {best_lambda}")
+    logger.info(f"Best sigma: {best_sigma}")
+    logger.info(f"Best window size: {best_window_size}")
         
-        logger.info("End")
+    logger.info("End")
     
