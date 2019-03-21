@@ -7,20 +7,26 @@ from utils.kernels import GaussianKernel
 from utils import FILES, DATA_DIR, RESULT_DIR
 import scipy as sp
 
+EMBEDDING_DIR = os.path.join(os.getcwd(), "embeddings")
+
+if not os.path.isdir(EMBEDDING_DIR):
+    os.mkdir(EMBEDDING_DIR)
+
 
 # DEFINE embeddings parameters lists
 k_list = [9, 10, 11]
 sigma_list = [0.35, 0.4, 0.45]
 
 
-n_anchors = 100
+n_anchors = 6000
 np.random.seed(1702)
 
 for k in k_list:
     for σ in sigma_list:
         for q in range(3):
 
-            print(f"params: {k, σ}. dataset: {q}", flush=True)
+            print("params: {0, 1}. dataset: {2}"
+                  "".format(k, σ, q), flush=True)
             # choose random anchors
             kmers = compute_kmers_list(q, k)
             index = np.random.choice(range(len(kmers)), replace=False, size = n_anchors)
@@ -63,4 +69,7 @@ for k in k_list:
 
             print(np.shape(E_train))
             # SAVE embeddings
-            np.save(f"embedding_d{q}_s{round(σ, 3)}_k{k}.npy", E_train)
+            np.save(os.path.join(EMBEDDING_DIR, 
+                                 "embedding_d{0}_s{1}_k{2}.npy"
+                                 "".format(q, round(σ, 3), k)),
+                    E_train)
