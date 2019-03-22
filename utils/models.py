@@ -105,6 +105,87 @@ class SVM:
     def score(self, y, y_pred):
         return np.sum([y == y_pred]) / len(y)
 
+class SVM_precomputed_gram:
+    """
+    This class implements the Support Vector Machine algorithm
+    """
+    def __init__(self, _lambda, kernel, maxiter=15000):
+        self.kernel = kernel
+        self._lambda = _lambda
+        self.maxiter = maxiter
+
+
+    def fit(self,X,y, K):
+        """
+        Fitting phase
+
+        Parameters
+        ------------
+        - X : numpy.ndarray
+            Data matrix
+
+        - y : numpy.array
+            Labels
+        """
+
+        self.X_train = X
+
+        # transpose Y_train to fit the optimization formulation
+        y = y * 2 - 1
+
+        # Use scipy.optimize to solve the problem
+        self.n = len(y)
+
+        # Define the loss function
+        f = lambda x: 1/2 * x.T.dot(K).dot(x) - y.T.dot(x)
+
+        # Define the jacobian of the loss function
+        grad_f = lambda x: K.dot(x) - y
+
+        # Define the bounds (sequences of min, max) (This depends on the sign of Y_train)
+        bounds = [[0, y[i] / (2 * self.n * self._lambda)]
+                  if y[i] > 0
+                  else [y[i] / (2 * self.n * self._lambda), 0]
+                  for i in range(self.n)]
+
+        # define initial point
+        x0 = np.zeros(self.n)
+
+        # define number max iteration
+        opts = {"maxiter": self.maxiter}
+
+        # optimize
+        res = optimize.minimize(f, x0, jac=grad_f, bounds=bounds, method="L-BFGS-B", options=opts)
+
+        # save results
+        self.alpha = res["x"]
+
+    def predict(self, X, S):
+        """
+        Prediction phase
+
+        Parameters
+        -----------
+        - X : numpy.ndarray
+            Testing data
+
+        Returns
+        -----------
+        - y_pred : numpy.array
+            Prediction array
+        """
+        # Compute the similarity matrix for faster prediction
+        y_pred = S.dot(self.alpha)
+
+        # Rescale the prediction to 0 and 1
+        y_pred = np.sign(y_pred) / 2 + 1/2
+
+        return y_pred
+
+
+    def score(self, y, y_pred):
+        return np.sum([y == y_pred]) / len(y)
+
 
 class SPR:
     """

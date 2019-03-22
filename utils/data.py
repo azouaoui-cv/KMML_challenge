@@ -98,7 +98,7 @@ def load_data(file_id, data_dir, files_dict, mat=True):
 
 
 def cross_validation(dataset_idx, clf, data_dir, files_dict,
-                     k=5, embeddings=None, embeddings_path=None, mat=False):
+                     k=5, embeddings=None, embeddings_path=None, mat=False, K=None):
     """
     Perform a k-fold cross-validation on a specific dataset
     given a specific classifier
@@ -129,7 +129,7 @@ def cross_validation(dataset_idx, clf, data_dir, files_dict,
 
     - embeddings : np.ndarray (optional)
         Computed embeddings available in memory
-        
+
     - mat : boolean
         Whether to take the original pre-processed embeddings
 
@@ -184,25 +184,42 @@ def cross_validation(dataset_idx, clf, data_dir, files_dict,
         else:
             _X_val = X_train[lower:upper]
             _X_train = X_train[:lower] + X_train[upper:]
-            
+
         _Y_val = Y_train[idx]
         _Y_train = Y_train[not_idx]
-            
+
         # Sanity checks
         assert len(_X_train) == len(_Y_train)
         assert len(_X_val) == len(_Y_val)
         assert len(_X_train) == n - len(X_train) // k
-        
-        # Fit the classifier on the current training set
-        clf.fit(_X_train, _Y_train)
-        # Compute the score
-        y_pred_train = clf.predict(_X_train)
-        y_pred_val = clf.predict(_X_val)
-        score_train = clf.score(y_pred_train, _Y_train)
-        score_val = clf.score(y_pred_val, _Y_val)
 
-        scores_val.append(score_val)
-        scores_train.append(score_train)
+        # Compute the of the corresponding portion of the gram matrix if given
+        if K is not None:
+
+            G = np.take(np.take(K, not_idx, axis = 0), not_idx ,axis = 1)
+            S = np.take(np.take(K, idx, axis = 0), not_idx ,axis = 1)
+
+            # Fit the classifier on the current training set
+            clf.fit(_X_train, _Y_train, G)
+            # Compute the score
+            y_pred_train = clf.predict(_X_train, G)
+            y_pred_val = clf.predict(_X_val, S)
+            score_train = clf.score(y_pred_train, _Y_train)
+            score_val = clf.score(y_pred_val, _Y_val)
+
+            scores_val.append(score_val)
+            scores_train.append(score_train)
+        else:
+            # Fit the classifier on the current training set
+            clf.fit(_X_train, _Y_train)
+            # Compute the score
+            y_pred_train = clf.predict(_X_train)
+            y_pred_val = clf.predict(_X_val)
+            score_train = clf.score(y_pred_train, _Y_train)
+            score_val = clf.score(y_pred_val, _Y_val)
+
+            scores_val.append(score_val)
+            scores_train.append(score_train)
 
 
 
