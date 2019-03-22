@@ -263,11 +263,8 @@ if __name__ == "__main__":
             score_train = results["train_avg"]
             score_val = results["val_avg"]
             logging.info(f"Accuracy on train set / val set {i} : {round(score_train, 3)} / {round(score_val, 3)}"
-<<<<<<< HEAD
-                         f"(lambda: {_lambda}, gamma: {gamma}, sigma: {sigma}, window_size: {window_size})")
-=======
-                         f"(λ: {_lambda},γ: {gamma}, sigma: {sigma}, window_size: {window_size})", flush=True)
->>>>>>> 0c95cde6de2c3b37a053d752d99153c1da78106a
+                         f"(lambda: {_lambda}, gamma: {gamma}, sigma: {sigma}, window_size: {window_size})", flush=True)
+
 
             if score_val > best_score[i]:
                 best_score[i] = score_val
@@ -287,13 +284,7 @@ if __name__ == "__main__":
         if args.use_sigma:
             logging.info(f"Best sigma: {best_sigma}", flush=True)
         if args.use_window_size:
-<<<<<<< HEAD
-            logging.info(f"Best window size: {best_window_size}")
-=======
+
             logging.info(f"Best window size: {best_window_size}", flush=True)
-
-        logging.info("End")
-
->>>>>>> 0c95cde6de2c3b37a053d752d99153c1da78106a
 
         logging.info("End")
