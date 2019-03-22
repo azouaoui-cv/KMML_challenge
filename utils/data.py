@@ -265,6 +265,31 @@ def save_results(filename, results, result_dir):
         # Write results
         for i in range(len(results)):
                 writer.writerow([i, results[i]])
+                
+def filename_parser(filename):
+    """
+    Parse embeddings filename 
+    to extract relevant hyperparameters information
+    
+    Parameters
+    ----------
+    - filename : string
+        Filename (not the entire path)
+        
+    Returns
+    ---------
+    - dataset_idx : int
+        
+    - sigma : float
+    
+    - window_size : int
+    """
+    parser = filename.split("_")
+    dataset_idx = int(parser[1][1])
+    sigma = float(parser[2][1:])
+    window_size = int(parser[3][1:].split(".")[0])
+    print("Loading file: {0}".format(filename))
+    return dataset_idx, sigma, window_size
 
 def P(i, seq, k, zero_padding=True):
     """

@@ -7,19 +7,26 @@ from utils.kernels import GaussianKernel
 from utils import FILES, DATA_DIR, RESULT_DIR
 import scipy as sp
 
+EMBEDDING_DIR = os.path.join(os.getcwd(), "embeddings")
+
+if not os.path.isdir(EMBEDDING_DIR):
+    os.mkdir(EMBEDDING_DIR)
+
 
 # DEFINE embeddings parameters lists
-k_list = [10]
-sigma_list = [0.4]
+k_list = [9, 10, 11]
+sigma_list = [0.35, 0.4, 0.45]
 
 
-n_anchors = 10
+n_anchors = 6000
 np.random.seed(1702)
 
 for k in k_list:
     for σ in sigma_list:
         for q in range(3):
 
+            print("params: {0, 1}. dataset: {2}"
+                  "".format(k, σ, q), flush=True)
             # choose random anchors
             kmers = compute_kmers_list(q, k)
             index = np.random.choice(range(len(kmers)), replace=False, size = n_anchors)
@@ -36,8 +43,10 @@ for k in k_list:
             np.fill_diagonal(K_zz, np.diagonal(K_zz)/2)
             # Then, compute K_ZZ inv**0.5
             β = 1e-3
-            print("start matrix inversion")
+            print("start matrix inversion", flush=True)
             K_ZZ_inv_sqr = sp.linalg.inv(sp.linalg.sqrtm(K_zz + β*np.eye(np.shape(K_zz)[0])))
+            
+            assert np.all(K_ZZ_inv_sqr.imag == np.zeros((p, p))), "imaginary coefficients"
 
             # define approximate mapping thanks to the anchors
             def ψ_optim(x, Z_anchor, k , σ):
@@ -51,7 +60,7 @@ for k in k_list:
                 return np.sum(b, axis=1)/np.shape(b)[1]
 
             # compute embeddings
-            print("start compute embeddings")
+            print("start compute embeddings", flush=True)
             X_train, Y_train, X_test = load_data(q, data_dir=DATA_DIR, files_dict=FILES, mat = False)
             embed_train = []
             for x in X_train:
@@ -60,4 +69,7 @@ for k in k_list:
 
             print(np.shape(E_train))
             # SAVE embeddings
-            np.save(f"embedding_d{q}_s{round(σ, 3)}_k{k}.npy", E_train)
+            np.save(os.path.join(EMBEDDING_DIR, 
+                                 "embedding_d{0}_s{1}_k{2}.npy"
+                                 "".format(q, round(σ, 3), k)),
+                    E_train)
