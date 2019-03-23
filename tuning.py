@@ -17,6 +17,12 @@ import argparse
 import os
 from itertools import product
 
+
+
+if not os.path.isdir(LOGGING_DIR):
+    os.mkdir(LOGGING_DIR)
+
+
 # TODO: Choice values
 CHOICES_MODEL = ["SVM", "SPR", "SVM_precomputed_gram"]
 CHOICES_KERNEL = ["Gaussian", "Linear", "Conv"]
@@ -154,27 +160,32 @@ parser.add_argument("--use-precompute_gram",
 
 
 
-# Logging
-logging.basicConfig(filename=os.path.join(LOGGING_DIR, "test.txt"),
-                    level=logging.INFO,
-                    format='%(asctime)s %(message)s',
-                    datefmt='%m/%d/%Y %I:%M:%S %p')
-
 
 if __name__ == "__main__":
-    logging.info("Start", flush=True)
-
+    
     # Parser options
     args = parser.parse_args()
 
-    logging.info(args, flush=True)
+    # Logging
+    logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s",
+    datefmt='%m/%d/%Y %I:%M:%S %p',
+    handlers=[
+        logging.FileHandler(filename=os.path.join(LOGGING_DIR, args.logging_filename)),
+        logging.StreamHandler()
+    ])
+
+    logger = logging.getLogger()
+    
+    # Configuration information
+    logger.info("Start")
+    logger.info(f"args: {args}")
 
     kernel_name = args.kernel
     model_name = args.clf
-
-    print(f"args: {args}", flush=True)
-    print(f"args use mat: {args.use_mat}", flush=True)
-    print(f"args precompute gram matrix: {args.use_precompute_gram}")
+    
+    
     # Populate hyperparameters list
     if args.use_lambda:
         if args.lambda_logscale:
@@ -262,8 +273,8 @@ if __name__ == "__main__":
 
             score_train = results["train_avg"]
             score_val = results["val_avg"]
-            logging.info(f"Accuracy on train set / val set {i} : {round(score_train, 3)} / {round(score_val, 3)}"
-                         f"(lambda: {_lambda}, gamma: {gamma}, sigma: {sigma}, window_size: {window_size})", flush=True)
+            logger.info(f"Accuracy on train set / val set {i} : {round(score_train, 3)} / {round(score_val, 3)}"
+                         f"(lambda: {_lambda}, gamma: {gamma}, sigma: {sigma}, window_size: {window_size})")
 
 
             if score_val > best_score[i]:
@@ -273,18 +284,17 @@ if __name__ == "__main__":
                 best_sigma[i] = sigma
                 best_window_size[i] = window_size
 
-                logging.info("\n")
+                logger.info("New best on {0}".format(i))
 
         # Save best configuration
-        logging.info(f"Best score: {best_score}", flush=True)
+        logger.info(f"Best score: {best_score}")
         if args.use_gamma:
-            logging.info(f"Best gamma: {best_gamma}", flush=True)
+            logger.info(f"Best gamma: {best_gamma}")
         if args.use_lambda:
-            logging.info(f"Best lambda: {best_lambda}", flush=True)
+            logger.info(f"Best lambda: {best_lambda}")
         if args.use_sigma:
-            logging.info(f"Best sigma: {best_sigma}", flush=True)
+            logger.info(f"Best sigma: {best_sigma}")
         if args.use_window_size:
+            logger.info(f"Best window size: {best_window_size}")
 
-            logging.info(f"Best window size: {best_window_size}", flush=True)
-
-        logging.info("End")
+        logger.info("End")
