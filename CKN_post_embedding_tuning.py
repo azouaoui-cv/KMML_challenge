@@ -1,6 +1,6 @@
 """
 Perform cross-validation hyperparameters tuning
-on pre-computed embeddings
+on pre-computed embeddings available in an embedding folder
 """
 ###########
 # Imports #
