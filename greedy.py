@@ -115,7 +115,7 @@ if __name__ == "__main__":
             norms2 = norms ** 2
 
             # Loop over anchors to be selected
-            for k in range(objectif-1):
+            for m in range(objectif-1):
 
                 # Select new anchor
                 Z = np.array(anchors)
