@@ -2,10 +2,12 @@
 
 This file is used for tuning our existing models
 using the parameters range provided
+on either raw data or a pre-computed array representation 
 
 """
-
-# TODO: Imports
+###########
+# Imports #
+###########
 import logging
 import numpy as np
 from utils.data import load_data
@@ -18,39 +20,43 @@ import os
 from itertools import product
 
 
-
+#########
+# Paths #
+#########
 if not os.path.isdir(LOGGING_DIR):
     os.mkdir(LOGGING_DIR)
 
 
-# TODO: Choice values
+#########
+# Setup #
+#########
+# Choice values"
 CHOICES_MODEL = ["SVM", "SPR", "SVM_precomputed_gram"]
 CHOICES_KERNEL = ["Gaussian", "Linear", "Conv"]
 
-
-# TODO: Default values
+# Default values
 DEFAULT_MODEL = "SVM"
 DEFAULT_KERNEL = "Gaussian"
 # Lambda
-DEFAULT_LAMBDA_MIN = -9
-DEFAULT_LAMBDA_MAX = -5
-DEFAULT_LAMBDA_NUM = 3
+DEFAULT_LAMBDA_MIN = -7
+DEFAULT_LAMBDA_MAX = -4
+DEFAULT_LAMBDA_NUM = 10
 DEFAULT_LAMBDA_LOGSCALE = True
 DEFAULT_USE_LAMBDA = False
 # Gamma
 DEFAULT_GAMMA_MIN = 50
-DEFAULT_GAMMA_MAX = 350
-DEFAULT_GAMMA_NUM = 10
+DEFAULT_GAMMA_MAX = 600
+DEFAULT_GAMMA_NUM = 51
 DEFAULT_GAMMA_LOGSCALE = False
 DEFAULT_USE_GAMMA = False
 # Sigma
-DEFAULT_SIGMA_MIN = 0.35
-DEFAULT_SIGMA_MAX = 0.45
+DEFAULT_SIGMA_MIN = 0.26
+DEFAULT_SIGMA_MAX = 0.36
 DEFAULT_SIGMA_NUM = 3
 DEFAULT_USE_SIGMA = False
 # Window size
-DEFAULT_WINDOW_SIZE_MIN = 9
-DEFAULT_WINDOW_SIZE_MAX = 11
+DEFAULT_WINDOW_SIZE_MIN = 8
+DEFAULT_WINDOW_SIZE_MAX = 10
 DEFAULT_WINDOW_SIZE_NUM = 3
 DEFAULT_USE_WINDOW_SIZE = False
 # Numerical representation
@@ -58,15 +64,15 @@ DEFAULT_USE_MAT = False
 # Number of cross-validation folds
 DEFAULT_K_FOLD = 5
 # Logging filename
-DEFAULT_LOGGING_FILENAME = "test.txt"
+DEFAULT_LOGGING_FILENAME = "SVM_tuning.log"
 # precompute gram matrix
 DEFAULT_PRECOMPUTE_GRAM = False
 
 
 
-# TODO: Cross-validation
-
-# TODO: Command line arguments
+##########################
+# Command line arguments #
+##########################
 import argparse
 
 parser = argparse.ArgumentParser("Tuning script")
@@ -153,14 +159,15 @@ parser.add_argument("--logging-filename",
                    help=f"Filename of the logging file. Default: {DEFAULT_LOGGING_FILENAME}",
                    default=DEFAULT_LOGGING_FILENAME, type=str)
 # precompute Gram matrix before cross-validation
-parser.add_argument("--use-precompute_gram",
+parser.add_argument("--use-precompute-gram",
                    help=f"Wheter to use the precompute gram matrix before cross-validation. Default: {DEFAULT_PRECOMPUTE_GRAM}",
                    default=DEFAULT_PRECOMPUTE_GRAM, action="store_true")
 
 
 
-
-
+########
+# Main #
+########
 if __name__ == "__main__":
     
     # Parser options
@@ -178,13 +185,14 @@ if __name__ == "__main__":
 
     logger = logging.getLogger()
     
-    # Configuration information
+    ############
+    # Settings #
+    ############
     logger.info("Start")
     logger.info(f"args: {args}")
 
     kernel_name = args.kernel
     model_name = args.clf
-    
     
     # Populate hyperparameters list
     if args.use_lambda:
@@ -213,12 +221,11 @@ if __name__ == "__main__":
     else:
         window_size_list = [0]
 
-
-
-
-
-
-    settings = list(product(gamma_list, lambda_list, sigma_list, window_size_list))
+    # Adjust settings accordingly
+    if args.use_precompute_gram:
+        settings = list(product(sigma_list, window_size_list))
+    else:
+        settings = list(product(gamma_list, lambda_list, sigma_list, window_size_list))
 
     len_files = len(FILES)
 
@@ -227,11 +234,18 @@ if __name__ == "__main__":
     best_gamma = {i: 0 for i in range(len_files)}
     best_sigma = {i: 0 for i in range(len_files)}
     best_window_size = {i: 0 for i in range(len_files)}
+    
+    N = len(settings)
 
     for _, params in enumerate(settings):
 
-        print(params)
-        gamma, _lambda, sigma, window_size = params
+        logger.info(f"Run {_ + 1} / {N}")
+        
+        if args.use_precompute_gram:
+            gamma, _lambda = None, None
+            sigma, window_size = params
+        else:
+            gamma, _lambda, sigma, window_size = params
         # convert window_size to int
         window_size = int(window_size)
 
@@ -251,7 +265,10 @@ if __name__ == "__main__":
             clf = SPR(kernel=kernel)
 
         elif model_name =="SVM_precomputed_gram":
-            clf = SVM_precomputed_gram(_lambda=_lambda, kernel=kernel)
+            if args.use_precompute_gram:
+                clf = None # To be defined later
+            else:
+                clf = SVM_precomputed_gram(_lambda=_lambda, kernel=kernel)
 
 
         for i in range(len_files):
@@ -261,40 +278,58 @@ if __name__ == "__main__":
                 # Load data
                 X_train, Y_train, X_test = load_data(i, data_dir=DATA_DIR, files_dict=FILES, mat=args.use_mat)
 
-                # compute gram matrix of ALL dataset
+                # compute gram matrix of ALL dataset 
                 K = kernel.compute_gram_matrix(X_train)
+                
+                # Same Gram matrix to be used on different lambdas
+                for _lambda in lambda_list:
+                    assert model_name == "SVM_precomputed_gram"
+                    clf = SVM_precomputed_gram(_lambda=_lambda, kernel=kernel)
 
-                # cross validation (default: k=5)
-                results = cross_validation(i, clf, k=args.k_fold, data_dir=DATA_DIR, files_dict=FILES, mat=args.use_mat, K=K)
+                    # cross validation (default: k=5)
+                    results = cross_validation(i, clf, k=args.k_fold, data_dir=DATA_DIR, files_dict=FILES, mat=args.use_mat, K=K)
+                
+                    score_train = results["train_avg"]
+                    score_val = results["val_avg"]
+                    logger.info(f"Accuracy on train set / val set {i} : {round(score_train, 3)} / {round(score_val, 3)}"
+                             f"(lambda: {_lambda}, gamma: {gamma}, sigma: {sigma}, window_size: {window_size})")
+                    
+                    if score_val > best_score[i]:
+                        best_score[i] = score_val
+                        best_lambda[i] = _lambda
+                        best_gamma[i] = gamma
+                        best_sigma[i] = sigma
+                        best_window_size[i] = window_size
 
+                        logger.info("New best on {0}".format(i))
+                
+                
             else:
                 results = cross_validation(i, clf, k=args.k_fold, data_dir=DATA_DIR, files_dict=FILES, mat=args.use_mat)
+                score_train = results["train_avg"]
+                score_val = results["val_avg"]
+                logger.info(f"Accuracy on train set / val set {i} : {round(score_train, 3)} / {round(score_val, 3)}"
+                             f"(lambda: {_lambda}, gamma: {gamma}, sigma: {sigma}, window_size: {window_size})")
 
 
-            score_train = results["train_avg"]
-            score_val = results["val_avg"]
-            logger.info(f"Accuracy on train set / val set {i} : {round(score_train, 3)} / {round(score_val, 3)}"
-                         f"(lambda: {_lambda}, gamma: {gamma}, sigma: {sigma}, window_size: {window_size})")
+                if score_val > best_score[i]:
+                    best_score[i] = score_val
+                    best_lambda[i] = _lambda
+                    best_gamma[i] = gamma
+                    best_sigma[i] = sigma
+                    best_window_size[i] = window_size
 
+                    logger.info("New best on {0}".format(i))
 
-            if score_val > best_score[i]:
-                best_score[i] = score_val
-                best_lambda[i] = _lambda
-                best_gamma[i] = gamma
-                best_sigma[i] = sigma
-                best_window_size[i] = window_size
+    # Save best configuration
+    logger.info(f"Best score: {best_score}")
+    if args.use_gamma:
+        logger.info(f"Best gamma: {best_gamma}")
+    if args.use_lambda:
+        logger.info(f"Best lambda: {best_lambda}")
+    if args.use_sigma:
+        logger.info(f"Best sigma: {best_sigma}")
+    if args.use_window_size:
+        logger.info(f"Best window size: {best_window_size}")
 
-                logger.info("New best on {0}".format(i))
-
-        # Save best configuration
-        logger.info(f"Best score: {best_score}")
-        if args.use_gamma:
-            logger.info(f"Best gamma: {best_gamma}")
-        if args.use_lambda:
-            logger.info(f"Best lambda: {best_lambda}")
-        if args.use_sigma:
-            logger.info(f"Best sigma: {best_sigma}")
-        if args.use_window_size:
-            logger.info(f"Best window size: {best_window_size}")
-
-        logger.info("End")
+    logger.info("End")

@@ -33,7 +33,6 @@ np.random.seed(1702)
 # Main #
 ########
 if __name__ == "__main__":
-    
     for k in k_list:
         for σ in sigma_list:
             for q in range(3):
