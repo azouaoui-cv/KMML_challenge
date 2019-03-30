@@ -108,6 +108,7 @@ class SVM:
 class SVM_precomputed_gram:
     """
     This class implements the Support Vector Machine algorithm
+    using a pre-defined Gram Matrix (useful when tuning SVM+ConvKernel)
     """
     def __init__(self, _lambda, kernel, maxiter=15000):
         self.kernel = kernel

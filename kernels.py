@@ -3,7 +3,8 @@
 Implement some kernels to be used in the ``models.py`` module, including:
 
 - GaussianKernel
-- ...
+- LinearKernel
+- ConvKernel
 
 """
 
