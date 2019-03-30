@@ -1,12 +1,14 @@
-# KMML_challenge
+# KMML challenge
 Kernel Method for Machine Learning Kaggle challenge
 
-## Git 101
+## Starter pack
 
-There are 5 main commands that you need to use ``git`` efficiently:
+This code has been developed using Python 3.7.
 
-0. ``git status`` to know what is the status of the repository (how many commits are to be pushed? how many files are untracked? how many files are added and waiting to be commited?). This is always useful.
-1. ``git pull`` everytime you resume working on a repository to keep track of remote changes
-2. ``git add`` to select the files you want to commit locally.
-3. ``git commit -m "this is a commit"`` to commit the files along with the message "this is a commit". The ``-m`` denotes the message.
-4. ``git push`` to push the local changes to the remote server.
+The results are reproducible using [(Mini)conda](https://docs.conda.io/en/latest/miniconda.html) as follow (you may want to skip to step 4 if you have a running version of Python 3.7 that includes the requirements found in ``requirements.txt``)
+
+1. To instanciate the ``conda`` environmment, run ``conda create --file conda-env.txt --name km``
+2. Activate the virtual environement, using ``conda activate km`` (or ``source activate km``)
+3. Then use ``pip`` to install the required Python packages in ``requirements.txt``: ``pip -r requirements.txt``
+4. Launch the main file: ``python start.py`` and grab a cup of coffee as it takes around 1 hour to complete :)
+5. You can find the final results in ``Yte.csv`` inside the ``results`` folder.
