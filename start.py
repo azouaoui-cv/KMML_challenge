@@ -28,7 +28,7 @@ from utils import FILES, DATA_DIR, RESULT_DIR
 if not os.path.exists(RESULT_DIR):
     os.mkdir(RESULT_DIR)    
 if not os.path.exists(DATA_DIR):
-    raise ValueError("Please create a data directory "
+    raise ValueError("Please create a ``data`` directory "
                      "containing the data .csv files.")
 
 print("Starting the main script...")
