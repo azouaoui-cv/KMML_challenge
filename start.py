@@ -31,10 +31,13 @@ if not os.path.exists(DATA_DIR):
     raise ValueError("Please create a data directory "
                      "containing the data .csv files.")
 
+print("Starting the main script...")
+print("It consists in bagging 3 different classifiers outputs...")
+print("This can take over an hour...")
 ################################
 # 1) SVM with Gaussian kernel  #
 ################################
-
+print("1/3 Starting SVM with Gaussian kernel...")
 # Define parameters lists
 gamma_list = [391, 292, 325]
 lambda_list = [1e-7, 1e-7, 1e-7]
@@ -59,12 +62,12 @@ for i in range(len_files):
 
 # SAVE Results
 save_results("results_SVM_gaussian.csv", results0, RESULT_DIR)
-
+print("1/3 Ending SVM with Gaussian kernel...")
 
 #####################################
 # 2) SVM with Convolutional kernel  #
 #####################################
-
+print("2/3 Starting SVM with Convolutional kernel...")
 # Define parameters lists
 sigma_list = [0.31,0.31,0.3]
 k_list = [9,10,11]
@@ -89,12 +92,12 @@ for i in range(len_files):
 
 # SAVE Results
 save_results("results_conv_kernel.csv", results1, RESULT_DIR)
-
+print("2/3 Ending SVM with Convolutional kernel...")
 
 ###########
 # 3) CKN  #
 ###########
-
+print("3/3 Starting CKN...")
 # Define parameters lists
 # for embeddings
 k_list = [9, 9, 7]
@@ -140,13 +143,14 @@ for q in range(len_files):
 
 # SAVE Results
 save_results("results_CKN.csv", results2, RESULT_DIR)
-
+print("3/3 Ending CKN...")
 
 ###########
 # Bagging #
 ###########
-
+print("Starting bagging...")
 # define the list of predictions to do bagging
 file_list = ['results_SVM_gaussian.csv', 'results_conv_kernel.csv', 'results_CKN.csv']
 savename = "Yte.csv"
 y_pred = bagging(file_list, savename)
+print("End bagging...")

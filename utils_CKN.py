@@ -138,8 +138,8 @@ def K_zz_inv_sqr(anchors, σ, β=1e-3):
         matrix with the anchors as rows
     - σ : float
         parameters in the exponential function
-    - k : int
-        length of the k-mers
+    - β : float (optional)
+        Conditioning parameter to invert K_zz matrix
     """
     # compute K_ZZ
     Z = anchors
@@ -152,9 +152,10 @@ def K_zz_inv_sqr(anchors, σ, β=1e-3):
     np.fill_diagonal(K_zz, np.diagonal(K_zz)/2)
 
     # Then, compute K_ZZ inv**0.5
-    print("start matrix inversion", flush=True)
+    print("Start matrix inversion")
     K_ZZ_inv_sqr = sp.linalg.inv(sp.linalg.sqrtm(K_zz + β*np.eye(np.shape(K_zz)[0])))
-
+    print("Done")
+    
     return K_ZZ_inv_sqr
 
 
@@ -192,10 +193,11 @@ def compute_embeddings(X, Z_anchor, k, σ, K_ZZ_inv_sqr):
     assert np.all(K_ZZ_inv_sqr.imag == np.zeros((p, p))), "imaginary coefficients"
 
     ####################### COMPUTE EMBEDDINGS ########################
-    print("start compute embeddings")
+    print("Start computing embeddings")
     embed = []
     for x in X:
         embed.append(ψ_optim(x, Z_anchor, k, σ))
     embed = np.array(embed)
+    print("Done")
 
     return embed
