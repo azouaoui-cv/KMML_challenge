@@ -1,7 +1,7 @@
 import csv
 import os
 import numpy as np
-from utils.data import save_results
+from utils import save_results
 from utils import FILES, DATA_DIR, RESULT_DIR
 
 
