@@ -10,11 +10,11 @@ on either raw data or a pre-computed array representation
 ###########
 import logging
 import numpy as np
-from utils.data import load_data
-from utils.data import cross_validation
-from utils.kernels import LinearKernel, GaussianKernel, ConvKernel
+from utils import load_data
+from utils import cross_validation
+from kernels import LinearKernel, GaussianKernel, ConvKernel
 from utils import FILES, DATA_DIR, RESULT_DIR, LOGGING_DIR
-from utils.models import SVM, SPR, SVM_precomputed_gram
+from models import SVM, SPR, SVM_precomputed_gram
 import argparse
 import os
 from itertools import product

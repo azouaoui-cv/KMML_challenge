@@ -7,12 +7,12 @@ on pre-computed embeddings available in an embedding folder
 ###########
 import logging
 import numpy as np
-from utils.data import load_data
-from utils.data import cross_validation
-from utils.data import filename_parser
-from utils.kernels import LinearKernel, GaussianKernel, ConvKernel
+from utils import load_data
+from utils import cross_validation
+from utils import filename_parser
+from kernels import LinearKernel, GaussianKernel, ConvKernel
 from utils import FILES, DATA_DIR, RESULT_DIR, LOGGING_DIR, EMBEDDING_DIR
-from utils.models import SVM, SPR
+from models import SVM, SPR
 import argparse
 import os
 from itertools import product

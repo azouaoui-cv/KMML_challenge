@@ -8,7 +8,8 @@ using different hyperparameters
 ###########
 import numpy as np
 import os
-from utils.data import load_data, compute_kmers_list, K1, P
+from utils_CKN import compute_kmers_list, K1, P
+from utils import load_data
 from utils import FILES, DATA_DIR
 import scipy as sp
 
@@ -36,7 +37,7 @@ if __name__ == "__main__":
     for k in k_list:
         for σ in sigma_list:
             for q in range(3):
-                print("params: {0, 1}. dataset: {2}"
+                print("params: (k={0}, σ={1}). dataset: {2}"
                       "".format(k, σ, q))
                 # choose random anchors
                 kmers = compute_kmers_list(q, k)
