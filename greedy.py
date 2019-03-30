@@ -14,7 +14,8 @@ import numpy as np
 from tqdm import tqdm
 from scipy import linalg
 from utils import FILES, LOGGING_DIR
-from utils.data import load_data, K1, compute_kmers_list
+from utils import load_data
+from utils_CKN import K1, compute_kmers_list
 import logging
 import argparse
 
